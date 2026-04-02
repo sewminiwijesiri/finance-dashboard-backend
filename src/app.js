@@ -1,17 +1,20 @@
 const express = require("express");
 const cors = require("cors");
-const app = express();
+const connectDB = require("./config/db");
 
-// Middlewares
+require("dotenv").config();
+
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Basic Route
-app.get("/", (req, res) => {
-  res.send("🚀 Finance Dashboard API is Running...");
+connectDB();
+
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/records", require("./routes/recordRoutes"));
+
+app.listen(process.env.PORT || 5000, () => {
+    console.log("Server running...");
 });
-
-// Import and use routes here
-// Example: app.use("/api/auth", require("./routes/authRoutes"));
-
-module.exports = app;
