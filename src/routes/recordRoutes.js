@@ -1,6 +1,6 @@
 const router = require("express").Router();
-const auth = require("../middleware/auth");
-const role = require("../middleware/role");
+const auth = require("../middlewares/auth");
+const role = require("../middlewares/role");
 const {
     createRecord,
     getRecords,

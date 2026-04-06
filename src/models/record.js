@@ -6,6 +6,7 @@ const RecordSchema = new mongoose.Schema({
     category: String,
     date: Date,
     notes: String,
+    description: String,
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 });
 
