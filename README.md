@@ -168,9 +168,3 @@ Role-based middleware is used to restrict actions:
 ## 📌 Author
 
 Sewmini Wijesiri
-
----
-
-## 🧠 Notes
-
-This project was developed as part of an internship assessment to demonstrate backend engineering skills including system design, access control, and clean architecture.
