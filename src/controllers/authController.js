@@ -32,7 +32,8 @@ exports.register = async (req, res) => {
 
         res.status(201).json({ message: "User created successfully", user: userResponse });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        if (err.name === 'ValidationError') return res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 };
 
@@ -62,6 +63,6 @@ exports.login = async (req, res) => {
 
         res.json({ token, role: user.role, name: user.name });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 };

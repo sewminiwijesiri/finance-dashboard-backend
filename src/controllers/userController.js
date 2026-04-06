@@ -5,7 +5,7 @@ exports.getAllUsers = async (req, res) => {
         const users = await User.find().select("-password");
         res.json(users);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 };
 
@@ -15,14 +15,15 @@ exports.updateUser = async (req, res) => {
         const user = await User.findByIdAndUpdate(
             req.params.id,
             { name, role, status },
-            { new: true }
+            { new: true, runValidators: true }
         ).select("-password");
 
         if (!user) return res.status(404).json({ message: "User not found" });
 
         res.json(user);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        if (err.name === 'ValidationError') return res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 };
 
@@ -32,6 +33,6 @@ exports.deleteUser = async (req, res) => {
         if (!user) return res.status(404).json({ message: "User not found" });
         res.json({ message: "User deleted successfully" });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 };
