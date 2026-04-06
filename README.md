@@ -84,6 +84,8 @@ The system enforces strict access boundaries:
 | **Edit/Delete Transactions** | ❌ | ❌ | ✅ |
 | **Global User Management** | ❌ | ❌ | ✅ |
 
+Admins can create financial records on behalf of users. Records are stored under the target user’s ID, and each non-admin user can only view records assigned to them
+
 ### Security Implementations
 
 - **Data Isolation**: All summary analytics and record listings are scoped strictly to the authenticated user (`createdBy: userId`).
