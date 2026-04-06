@@ -43,3 +43,25 @@ exports.deleteRecord = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
+
+exports.summary = async (req, res) => {
+    try {
+        const records = await Record.find();
+
+        const totalIncome = records
+            .filter(r => r.type === "income")
+            .reduce((sum, r) => sum + r.amount, 0);
+
+        const totalExpense = records
+            .filter(r => r.type === "expense")
+            .reduce((sum, r) => sum + r.amount, 0);
+
+        res.json({
+            totalIncome,
+            totalExpense,
+            netBalance: totalIncome - totalExpense
+        });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
