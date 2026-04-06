@@ -7,6 +7,7 @@ const RecordSchema = new mongoose.Schema({
     date: { type: Date, required: true, default: Date.now },
     notes: String,
     description: String,
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
