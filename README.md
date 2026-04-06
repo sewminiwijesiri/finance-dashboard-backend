@@ -2,19 +2,17 @@
 
 ## 📌 Overview
 
-This project is a backend system for a finance dashboard that manages financial records, user roles, and access control.
-
-The system is designed to demonstrate backend development skills including API design, data modeling, business logic implementation, and role-based access control.
+This project is a  backend system for a finance dashboard. It handles financial records, user role management, and granular access control. The system is designed with scalability in mind, featuring JWT authentication, RBAC (Role-Based Access Control), and data aggregation for dashboard insights.
 
 ---
 
 ## 🚀 Tech Stack
 
-* Node.js
-* Express.js
-* MongoDB (Mongoose)
-* JSON Web Tokens (JWT)
-* bcryptjs
+* **Node.js**: Runtime environment
+* **Express.js**: Web framework
+* **MongoDB (Mongoose)**: NoSQL database for flexible data modeling
+* **JSON Web Tokens (JWT)**: Secure authentication
+* **bcryptjs**: Password hashing
 
 ---
 
@@ -22,12 +20,12 @@ The system is designed to demonstrate backend development skills including API d
 
 ```
 src/
- ├── config/        # Database connection
- ├── controllers/   # Business logic
- ├── middleware/    # Auth & Role control
- ├── models/        # Mongoose schemas
- ├── routes/        # API routes
- └── app.js         # Entry point
+ ├── config/        # Database and environment configuration
+ ├── controllers/   # Business logic and request handling
+ ├── middlewares/   # Authentication and Role-based authorization
+ ├── models/        # Mongoose schemas (User, Record)
+ ├── routes/        # API route definitions
+ └── app.js         # Express application entry point
 ```
 
 ---
@@ -36,135 +34,104 @@ src/
 
 ### 1. Clone Repository
 
-```
+```bash
 git clone <your-repo-link>
-cd finance-backend
+cd finance-dashboard-backend
 ```
 
 ### 2. Install Dependencies
 
-```
+```bash
 npm install
 ```
 
-### 3. Create `.env` File
+### 3. Configure Environment Variables
 
-```
+Create a `.env` file in the root directory:
+
+```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/finance-db
+MONGO_URL=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
+JWT_EXPIRE=24h
 ```
 
-### 4. Run Server
+### 4. Run the Server
 
-```
+```bash
+# Development mode (with nodemon)
 npm run dev
+
+# Production mode
+npm start
 ```
 
 ---
 
-## 🔐 Authentication
+## 🔐 Authentication & Access Control
 
-* JWT-based authentication is used
-* Token must be sent in headers:
+### User Roles & Permissions
 
-```
-Authorization: <token>
-```
+| Role    | Permissions                                                                 |
+| ------- | --------------------------------------------------------------------------- |
+| **Viewer**  | Can view records and listing.                                               |
+| **Analyst** | Can view records, listing, and access dashboard summaries/insights.          |
+| **Admin**   | Full access: Create, Update, Delete records and manage users (roles/status). |
 
----
+### Security Features
 
-## 👥 User Roles
-
-| Role    | Permissions                |
-| ------- | -------------------------- |
-| Viewer  | View records               |
-| Analyst | View + Summary             |
-| Admin   | Full access (CRUD + Users) |
+* **JWT-based Auth**: Tokens must be sent in the `Authorization` header as `Bearer <token>`.
+* **RBAC Middleware**: Ensures users can only perform actions authorized for their role.
+* **Account Status**: Users can be set to `inactive` by admins to revoke access.
+* **Input Validation**: Basic validation for email formats, password length, and missing fields.
 
 ---
 
 ## 📊 API Endpoints
 
-### 🔑 Auth
+### 🔑 Authentication (`/api/auth`)
 
-* POST `/api/auth/register` → Register user
-* POST `/api/auth/login` → Login & get token
+* `POST /register`: Create a new user (Default role: viewer).
+* `POST /login`: Authenticate and receive a JWT.
 
----
+### 👤 User Management — Admin Only (`/api/users`)
 
-### 👤 Users (Admin Only)
+* `GET /`: List all users.
+* `PUT /:id`: Update user details, roles, or status.
+* `DELETE /:id`: Remove a user from the system.
 
-* Create user
-* Manage roles & status
+### 💰 Financial Records (`/api/records`)
 
----
+* `POST /`: Create a new transaction (Admin).
+* `GET /`: Retrieve records with support for:
+    * **Filtering**: `type`, `category`, `startDate`, `endDate`.
+    * **Search**: `keyword` (searches category, description, and notes).
+    * **Pagination**: `page`, `limit`.
+* `PUT /:id`: Update an existing record (Admin).
+* `DELETE /:id`: Delete a record (Admin).
 
-### 💰 Records
+### 📈 Dashboard Analytics (`/api/records/summary`)
 
-* POST `/api/records` → Create record (Admin)
-* GET `/api/records` → Get records (All roles)
-* PUT `/api/records/:id` → Update record (Admin)
-* DELETE `/api/records/:id` → Delete record (Admin)
+Provides aggregated data (Analyst and Admin only):
 
----
-
-### 📈 Dashboard Summary
-
-* GET `/api/records/summary`
-
-Returns:
-
-* Total income
-* Total expenses
-* Net balance
-
-(Accessible by Analyst & Admin)
+* **Summary**: Total Income, Total Expenses, and Net Balance.
+* **Category-wise Analysis**: Breakdown of income/expenses per category.
+* **Monthly Trends**: Time-series data for income and expenses.
+* **Recent Activity**: The 5 most recent transactions.
 
 ---
 
-## 🔒 Access Control
+## ✅ Core Requirements Completed
 
-Role-based middleware is used to restrict actions:
-
-* Viewer → Read only
-* Analyst → Read + analytics
-* Admin → Full control
-
----
-
-## ✅ Features Implemented
-
-* User authentication (JWT)
-* Role-based authorization
-* Financial record CRUD operations
-* Filtering support
-* Dashboard summary API
-* Input validation & error handling
-* MongoDB data persistence
-
----
-
-## ⚠️ Assumptions
-
-* Authentication is simplified using JWT
-* No frontend included
-* Basic validation implemented for demonstration
-* Single environment (development)
-
----
-
-## 🌟 Optional Improvements (Future Work)
-
-* Pagination
-* Search functionality
-* Category-wise analytics
-* Monthly trends
-* Unit testing
-* API documentation (Swagger)
+1.  **User & Role Management**: Full CRUD for users with role and status management.
+2.  **Financial Records**: CRUD operations with advanced filtering and search.
+3.  **Dashboard Summary**: Aggregated data for business insights.
+4.  **Access Control**: Robust middleware-level enforcement of role-based permissions.
+5.  **Validation & Error Handling**: Proper status codes (400, 401, 403, 404, 500) and descriptive errors.
+6.  **Data Persistence**: Integrated with MongoDB Atlas/Local via Mongoose.
 
 ---
 
 ## 📌 Author
 
-Sewmini Wijesiri
+**Sewmini Wijesiri**
