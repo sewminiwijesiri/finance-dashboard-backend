@@ -44,9 +44,9 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email, isDeleted: false });
 
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ message: "User not found or account deleted" });
 
         if (user.status !== "active") {
             return res.status(403).json({ message: "Your account is not active. Please contact admin." });

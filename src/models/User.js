@@ -10,7 +10,8 @@ const UserSchema = new mongoose.Schema({
         default: "viewer",
         required: true
     },
-    status: { type: String, enum: ["active", "inactive"], default: "active", required: true }
+    status: { type: String, enum: ["active", "inactive"], default: "active", required: true },
+    isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", UserSchema);

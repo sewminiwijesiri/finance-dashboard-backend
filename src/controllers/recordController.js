@@ -1,14 +1,37 @@
-const Record = require("../models/Record");
+const Record = require("../models/record");
 
 exports.createRecord = async (req, res) => {
     try {
+        const { amount, type, category, date, notes, description, user } = req.body;
+
+        // Explicit input validation
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ message: "Amount must be a positive number" });
+        }
+
+        if (!type || !["income", "expense"].includes(type)) {
+            return res.status(400).json({ message: "Invalid type. Must be either 'income' or 'expense'" });
+        }
+
+        if (!category) {
+            return res.status(400).json({ message: "Category is required" });
+        }
+
         const record = await Record.create({
-            ...req.body,
-            createdBy: req.user.id
+            amount,
+            type,
+            category,
+            date,
+            notes,
+            description,
+            user: user || req.user.id, // Assigned user (defaults to self)
+            createdBy: req.user.id     // Admin/Creator
         });
+        
         res.status(201).json(record);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        if (err.name === 'ValidationError') return res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 };
 
@@ -17,9 +40,8 @@ exports.getRecords = async (req, res) => {
         const { type, category, startDate, endDate, keyword, page = 1, limit = 10 } = req.query;
         let query = { isDeleted: false };
 
-        // Users can only see their own records (except potentially Admins/Analysts if required,
-        // but feedback suggested per-user design is better)
-        query.createdBy = req.user.id;
+        // Users see records assigned to them
+        query.user = req.user.id;
 
         if (type) query.type = type;
         if (category) query.category = category;
@@ -56,16 +78,15 @@ exports.getRecords = async (req, res) => {
     }
 };
 
-
 exports.updateRecord = async (req, res) => {
     try {
-        // Ensure user only updates their own record
+        // Admins can update records. Only non-deleted ones.
         const record = await Record.findOneAndUpdate(
-            { _id: req.params.id, createdBy: req.user.id, isDeleted: false },
+            { _id: req.params.id, isDeleted: false },
             req.body,
             { new: true, runValidators: true }
         );
-        if (!record) return res.status(404).json({ message: "Record not found or unauthorized" });
+        if (!record) return res.status(404).json({ message: "Record not found" });
         res.json(record);
     } catch (err) {
         if (err.name === 'ValidationError') return res.status(400).json({ error: err.message });
@@ -75,14 +96,14 @@ exports.updateRecord = async (req, res) => {
 
 exports.deleteRecord = async (req, res) => {
     try {
-        // Soft delete
+        // Soft delete implementation
         const record = await Record.findOneAndUpdate(
-            { _id: req.params.id, createdBy: req.user.id },
+            { _id: req.params.id, isDeleted: false },
             { isDeleted: true },
             { new: true }
         );
-        if (!record) return res.status(404).json({ message: "Record not found or unauthorized" });
-        res.json({ message: "Record deleted successfully" });
+        if (!record) return res.status(404).json({ message: "Record not found" });
+        res.json({ message: "Record deleted successfully (soft delete)" });
     } catch (err) {
         res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
@@ -91,7 +112,8 @@ exports.deleteRecord = async (req, res) => {
 exports.summary = async (req, res) => {
     try {
         const userId = req.user.id;
-        const records = await Record.find({ createdBy: userId, isDeleted: false }).sort({ date: -1 });
+        // User sees summary of records assigned to them
+        const records = await Record.find({ user: userId, isDeleted: false }).sort({ date: -1 });
 
         const totalIncome = records
             .filter(r => r.type === "income")
@@ -128,9 +150,9 @@ exports.summary = async (req, res) => {
             },
             categoryWiseTotals,
             monthlyTrends,
-            recentActivity: records.slice(0, 5) // Now guaranteed to be the latest 5 because of .sort()
+            recentActivity: records.slice(0, 5)
         });
     } catch (err) {
         res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
-};
+};

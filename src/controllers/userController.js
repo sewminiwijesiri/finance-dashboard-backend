@@ -2,7 +2,7 @@ const User = require("../models/User");
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select("-password");
+        const users = await User.find({ isDeleted: false }).select("-password");
         res.json(users);
     } catch (err) {
         res.status(500).json({ error: "Internal Server Error", message: err.message });
@@ -12,13 +12,13 @@ exports.getAllUsers = async (req, res) => {
 exports.updateUser = async (req, res) => {
     try {
         const { name, role, status } = req.body;
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
+        const user = await User.findOneAndUpdate(
+            { _id: req.params.id, isDeleted: false },
             { name, role, status },
             { new: true, runValidators: true }
         ).select("-password");
 
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ message: "User not found or already deleted" });
 
         res.json(user);
     } catch (err) {
@@ -29,9 +29,13 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json({ message: "User deleted successfully" });
+        const user = await User.findOneAndUpdate(
+            { _id: req.params.id, isDeleted: false },
+            { isDeleted: true },
+            { new: true }
+        );
+        if (!user) return res.status(404).json({ message: "User not found or already deleted" });
+        res.json({ message: "User deleted successfully (soft delete)" });
     } catch (err) {
         res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
